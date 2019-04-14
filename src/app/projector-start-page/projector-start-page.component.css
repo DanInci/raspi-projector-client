@@ -1,0 +1,48 @@
+.container {
+    padding-top: 20px;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+}
+h1 {
+    font-size: 60pt;
+    font-weight: 500;
+}
+.not-found-title-div {
+    padding-bottom: 150px;
+}
+.ok-title-div {
+    padding-bottom: 50px;
+}
+.not-found-container, .ok-container {
+    height: 80%;
+}
+.custom-file {
+    max-width: 400px;
+    text-align: left !important;
+}
+.custom-button {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 100%;
+    text-align: center;
+}
+.btn {
+    width: 200px !important;
+}
+h3 {
+    font-size: 12pt;
+    padding-bottom: 20px;
+}
+.room-name-label, .status-label {
+    font-size: 10pt;
+}
+.status, .connect-and-status {
+    padding-top: 5px;
+}
+.loading {
+    padding-top: 30px;
+}
+.error-msg {
+    padding-top: 5px;
+}

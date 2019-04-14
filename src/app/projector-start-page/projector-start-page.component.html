@@ -1,0 +1,57 @@
+<div class="container">
+  <!-- Unsuccesful View -->
+  <div *ngIf="!isFound" class="not-found-container">
+    <div class="not-found-title-div">
+      <h1>Projector</h1>
+    </div>
+    <div class="custom-file">
+      <input type="file" class="custom-file-input" id="customFile" (change)="onFileChange($event)" accept=".ppt,.pptx"
+        [disabled]="isLoading">
+      <label class="custom-file-label" for="customFile">{{uploadText}}</label>
+    </div>
+    <div class="custom-button">
+      <button type="button" class="btn btn-secondary" (click)="upload()" [disabled]="isLoading">Upload</button>
+      <div *ngIf="errors" class="error-msg text-danger">
+        {{ errors }}
+      </div>
+    </div>
+  </div>
+  <!-- Succesful View -->
+  <div *ngIf="isFound" class="ok-container">
+    <div class="ok-title-div">
+      <h1>Projector</h1>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-5">
+        <div class="round-div">
+          <circle-progress [percent]="100" [outerStrokeWidth]="10" [innerStrokeWidth]="10" [outerStrokeColor]="isOwnerPresent ? '#28a745' : '#dc3545'"
+            [innerStrokeColor]="isOwnerPresent ? '#adedbb' : '#fcd1d5'" animation="false" animationDuration="0" title="Owner"></circle-progress>
+        </div>
+      </div>
+      <div class="col-5">
+        <div class="round-div users-div">
+          <circle-progress [percent]="usersOnline" [outerStrokeWidth]="10" [innerStrokeWidth]="10" [outerStrokeColor]="'#28a745'"
+            [innerStrokeColor]="'#adedbb'" animation="true" animationDuration="300" title="{{usersOnline}}"
+            showSubtitle=true subtitle="Online" subtitleFontSize=18></circle-progress>
+        </div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="col room-label">
+        <span class="room-name-label">Presentation</span>
+      </div>
+      <div class="room-name">
+        <h3>{{runningFileName}}</h3>
+      </div>
+    </div>
+    <div class="connect">
+      <button type="button" class="btn btn-success" (click)="connect()" [disabled]="isLoading">Connect</button>
+    </div>
+  </div>
+  <!-- Loading spinner -->
+  <div *ngIf="isLoading" class="d-flex justify-content-center loading">
+    <div class="spinner-border text-secondary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+</div>
