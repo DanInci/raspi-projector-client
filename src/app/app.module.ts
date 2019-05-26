@@ -6,8 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { ProjectorStartPageComponent } from './projector-start-page/projector-start-page.component';
 import { NgCircleProgressModule } from 'ng-circle-progress';
 import { ProjectorViewPageComponent } from './projector-view-page/projector-view-page.component';
-import { CookieService } from 'ngx-cookie-service';
-import { NgbModule, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppConfig } from './app.config';
 import { APP_INITIALIZER } from '@angular/core';
 
@@ -44,8 +43,6 @@ export const initializeApp = (appConfig: AppConfig) => {
     })
   ],
   providers: [
-    CookieService,
-    NgbActiveModal,
     AppConfig,
     { provide: APP_INITIALIZER,
       useFactory: initializeApp,

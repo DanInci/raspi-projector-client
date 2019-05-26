@@ -1,4 +1,5 @@
 import { Injectable, EventEmitter } from '@angular/core';
+import { OWNER_UUID } from './util/Constants';
 
 /**
  * Service used to create and connect to web sockets, it utilizes Subject and Observables from rxjs
@@ -21,6 +22,10 @@ export class WebsocketService {
         if (this.socket != null && this.socket.readyState === this.socket.OPEN) {
             console.error('CONNECT: Socket is already open');
         } else {
+            const ownerUUID = localStorage.getItem(OWNER_UUID);
+            if (ownerUUID !== null) {
+                socketURL = `${socketURL}?ownerUUID=${ownerUUID}`;
+            }
             console.log(`New socket connection to ${socketURL}`);
             this.socket = new WebSocket(socketURL);
             this.socket.onopen = event => {

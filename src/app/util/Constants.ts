@@ -19,3 +19,5 @@ export const enum RouteDefs {
     PRESENTATION = 'presentation',
     CONTROL = 'control'
 }
+
+export const OWNER_UUID = 'ownerUUID';

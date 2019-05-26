@@ -1,12 +1,11 @@
-import { CookieService } from 'ngx-cookie-service';
 import { WebsocketService } from '../websocket.service';
 import { Component, OnInit } from '@angular/core';
 import { RequestsService } from '../requests.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ISocketResponse, IErrorResponse, IStatsResponse } from '../models';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Request, Response, RouteDefs } from '../util/Constants';
+import { NgbModalConfig } from '@ng-bootstrap/ng-bootstrap';
+import { Request, Response, RouteDefs, OWNER_UUID } from '../util/Constants';
 import { repeatWhen, takeWhile } from 'rxjs/operators';
 import { interval } from 'rxjs';
 import { AppConfig } from '../app.config';
@@ -36,8 +35,6 @@ export class ProjectorViewPageComponent implements OnInit {
     private _router: Router,
     private _activeRoute: ActivatedRoute,
     private _sanitizer: DomSanitizer,
-    private _cookieService: CookieService,
-    private _modalService: NgbModal,
     modalConfig: NgbModalConfig) {
       modalConfig.backdrop = 'static';
       modalConfig.keyboard = false;
@@ -74,7 +71,7 @@ export class ProjectorViewPageComponent implements OnInit {
       }
       if (event.type === 'close') {
         this.pollStats = false;
-        this._cookieService.deleteAll();
+        localStorage.removeItem(OWNER_UUID);
       }
       if (event.type === 'open') {
         this.pollStats = true;
@@ -148,8 +145,8 @@ export class ProjectorViewPageComponent implements OnInit {
   }
 
   private clean() {
-    console.log('Clean... delete stored cookies, close socket connection, stop polling for stats.');
-    this._cookieService.deleteAll();
+    console.log('Clean... local storage, close socket connection, stop polling for stats.');
+    localStorage.removeItem(OWNER_UUID);
     this._wsService.close();
     this.pollStats = false;
   }

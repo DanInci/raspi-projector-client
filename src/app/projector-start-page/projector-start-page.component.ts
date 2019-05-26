@@ -1,11 +1,10 @@
-import { CookieService } from 'ngx-cookie-service';
 import { Component, OnInit } from '@angular/core';
 import { RequestsService } from '../requests.service';
 import { IPresentation, IUploadResponse, IErrorResponse, IStatsResponse } from '../models';
 import { Router } from '@angular/router';
 import { repeatWhen, takeWhile } from 'rxjs/operators';
 import { interval } from 'rxjs';
-import { RouteDefs } from '../util/Constants';
+import { RouteDefs, OWNER_UUID } from '../util/Constants';
 
 @Component({
   selector: 'app-projector-start-page',
@@ -27,7 +26,6 @@ export class ProjectorStartPageComponent implements OnInit {
   runningFileName = 'Running File Name';
 
   constructor(private _requestService: RequestsService,
-    private _cookieService: CookieService,
     private _router: Router) { }
 
   ngOnInit() {
@@ -70,7 +68,8 @@ export class ProjectorStartPageComponent implements OnInit {
    */
   private connect() {
     this.isLoading = true;
-    if (this._cookieService.check('ownerUUID')) {
+    const ownerUUID = localStorage.getItem(OWNER_UUID);
+    if ( ownerUUID !== null) {
       this.pollStats = false;
       this._router.navigate([RouteDefs.CONTROL]);
     } else {
@@ -109,7 +108,7 @@ export class ProjectorStartPageComponent implements OnInit {
       .subscribe(response => {
         if (response.status === 201) {
           const uploadResponse = response.body as IUploadResponse;
-          this._cookieService.set('ownerUUID', uploadResponse.ownerUUID, 7200, '/'); // store ownerUUID
+          localStorage.setItem(OWNER_UUID, uploadResponse.ownerUUID); // store ownerUUID
           this.connect(); // connect to presentation
         } else {
           const uploadResponse = response.body as IErrorResponse;
