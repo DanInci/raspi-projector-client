@@ -7,7 +7,6 @@ import { ProjectorStartPageComponent } from './projector-start-page/projector-st
 import { NgCircleProgressModule } from 'ng-circle-progress';
 import { ProjectorViewPageComponent } from './projector-view-page/projector-view-page.component';
 import { CookieService } from 'ngx-cookie-service';
-import { ModalComponent } from './modal/modal.component';
 import { NgbModule, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { AppConfig } from './app.config';
 import { APP_INITIALIZER } from '@angular/core';
@@ -21,7 +20,6 @@ export const initializeApp = (appConfig: AppConfig) => {
     AppComponent,
     ProjectorStartPageComponent,
     ProjectorViewPageComponent,
-    ModalComponent
   ],
   imports: [
     BrowserModule,
@@ -54,7 +52,6 @@ export const initializeApp = (appConfig: AppConfig) => {
       deps: [AppConfig], multi: true
     }
   ],
-  bootstrap: [AppComponent],
-  entryComponents: [ModalComponent]
+  bootstrap: [AppComponent]
 })
 export class AppModule { }

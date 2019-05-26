@@ -1,4 +1,3 @@
-import { ModalComponent } from '../modal/modal.component';
 import { CookieService } from 'ngx-cookie-service';
 import { WebsocketService } from '../websocket.service';
 import { Component, OnInit } from '@angular/core';
@@ -143,7 +142,7 @@ export class ProjectorViewPageComponent implements OnInit {
           this.redirectToHomePage();
           break;
         default:
-          console.error(`Unrecognized response command: ${response.command}`);
+          console.error(`Unrecognized response: ${event.data}`);
       }
     }
   }
@@ -190,13 +189,5 @@ export class ProjectorViewPageComponent implements OnInit {
     const command = JSON.stringify({command: Request.PRESENTATION_STOP});
     this._wsService.send(command);
   }
-  /**
-   * Open the warning modal
-   */
-  private openModal(title: string) {
-    if (!this._modalService.hasOpenModals() && !this.isControlPage) {
-      const modalRef = this._modalService.open(ModalComponent, {centered: true});
-      modalRef.componentInstance.title = title;
-    }
-  }
+
 }

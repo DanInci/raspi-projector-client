@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { RequestsService } from '../requests.service';
 import { IPresentation, IUploadResponse, IErrorResponse, IStatsResponse } from '../models';
 import { Router } from '@angular/router';
-import { repeatWhen } from 'rxjs/operators';
+import { repeatWhen, takeWhile } from 'rxjs/operators';
 import { interval } from 'rxjs';
 import { RouteDefs } from '../util/Constants';
 
@@ -15,6 +15,7 @@ import { RouteDefs } from '../util/Constants';
 export class ProjectorStartPageComponent implements OnInit {
 
   private presentation: IPresentation;
+  private pollStats = true;
   uploadText = 'Your Presentation.ppt';
   errors: string; // error messages to be displayed
 
@@ -31,6 +32,7 @@ export class ProjectorStartPageComponent implements OnInit {
 
   ngOnInit() {
     // start polling for stats every 10s
+    this.pollStats = true;
     this.pollForStats(10000);
   }
 
@@ -39,7 +41,8 @@ export class ProjectorStartPageComponent implements OnInit {
    */
   private pollForStats(every: number) {
     this._requestService.getStats().pipe(
-      repeatWhen(() => interval(every))
+      repeatWhen(() => interval(every)),
+      takeWhile(() => this.pollStats)
     ).subscribe(
       res => {
         if (res.status === 200) {
@@ -68,8 +71,10 @@ export class ProjectorStartPageComponent implements OnInit {
   private connect() {
     this.isLoading = true;
     if (this._cookieService.check('ownerUUID')) {
+      this.pollStats = false;
       this._router.navigate([RouteDefs.CONTROL]);
     } else {
+      this.pollStats = false;
       this._router.navigate([RouteDefs.PRESENTATION]);
     }
   }
@@ -105,16 +110,14 @@ export class ProjectorStartPageComponent implements OnInit {
         if (response.status === 201) {
           const uploadResponse = response.body as IUploadResponse;
           this._cookieService.set('ownerUUID', uploadResponse.ownerUUID, 7200, '/'); // store ownerUUID
-          this._router.navigate([RouteDefs.CONTROL]); // go to next page
+          this.connect(); // connect to presentation
         } else {
           const uploadResponse = response.body as IErrorResponse;
           this.isLoading = false;
-          this.isFound = false;
           this.errors = JSON.stringify(uploadResponse);
         }
       }, err => {
         console.error(`Error uploading file: ${err}`);
-        this.isFound = false;
         this.isLoading = false;
         this.errors = 'Error uploading file...';
       });
