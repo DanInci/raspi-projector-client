@@ -10,6 +10,7 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Request, Response, RouteDefs } from '../util/Constants';
 import { repeatWhen, takeWhile } from 'rxjs/operators';
 import { interval } from 'rxjs';
+import { AppConfig } from '../app.config';
 
 @Component({
   selector: 'app-projector-view-page',
@@ -55,51 +56,73 @@ export class ProjectorViewPageComponent implements OnInit {
         this.redirectToHomePage();
       }
     });
-    // get stats repeatedly and open socket
+
+    // open socket
+    this.openSocketConnection();
+
+    // start polling for stats
+    this.pollForStats(10000);
+  }
+
+  /**
+   * Opens a socket connection to `wsUrl`
+   */
+  private openSocketConnection() {
+    this._wsService.connect(AppConfig.settings.server.wsUrl);
+    this._wsService.getEventListener().subscribe(event => {
+      if (event.type === 'message') {
+        this.handleMessages(event);
+      }
+      if (event.type === 'close') {
+        this.pollStats = false;
+        this._cookieService.deleteAll();
+      }
+      if (event.type === 'open') {
+        this.pollStats = true;
+      }
+    });
+  }
+
+  /**
+   * Polls stats every `every` ms
+   */
+  private pollForStats(every: number) {
     this._requestService.getStats().pipe(
-      repeatWhen(() => interval(10000)),
+      repeatWhen(() => interval(every)),
       takeWhile(() => this.pollStats)
     ).subscribe(
       res => {
         if (res.status === 200) {
           this.isLoading = false;
-          // populate local values
           const statsResponse = res.body as IStatsResponse;
           this.isOwnerPresent = statsResponse.isOwnerPresent;
           this.usersOnline = statsResponse.controllers;
           this.name = statsResponse.name;
-          // open socket
-          this._wsService.getEventListener().subscribe(event => {
-            if (event.type === 'message') {
-              this.handleMessages(event);
-            }
-            if (event.type === 'close') {
-              this.pollStats = false;
-            }
-            if (event.type === 'open') {
-              this.pollStats = true;
-            }
-          });
         } else if (res.status === 404) {
+          this.clean();
           this.redirectToHomePage();
         } else {
           const statsResponse = res.body as IErrorResponse;
-          console.log(`Error requesting stats: ${statsResponse.error}`);
+          console.error(`Error requesting stats: ${statsResponse.error}`);
+          this.clean();
           this.redirectToHomePage();
         }
       }, err => {
-        console.log(`Error requesting stats: ${err}`);
+        console.error(`Error requesting stats: ${err}`);
+        this.clean();
         this.redirectToHomePage();
       });
   }
+
+
+
   /**
    * Handle Socket Messages
    */
-  handleMessages(event) {
+  private handleMessages(event) {
     if (event.data) {
-      console.log(event.data);
       const response: ISocketResponse = JSON.parse(event.data);
-      console.log(response);
+      console.log(response.command);
       switch (response.command) {
         case Response.SLIDE_SHOW_STARTED:
           this.totalSlides = response.totalSlides ? response.totalSlides - 1 : 0; // because the last slide is always black
@@ -115,17 +138,18 @@ export class ProjectorViewPageComponent implements OnInit {
           }
           break;
         case Response.SLIDE_SHOW_FINISHED:
-          this.openModal('Projector Warning');
           this.clean();
+          // this.openModal('Projector Warning');
           this.redirectToHomePage();
           break;
         default:
-          console.log(`Unrecognized response command: ${response.command}`);
+          console.error(`Unrecognized response command: ${response.command}`);
       }
     }
   }
 
-  clean() {
+  private clean() {
+    console.log('Clean... delete stored cookies, close socket connection, stop polling for stats.');
     this._cookieService.deleteAll();
     this._wsService.close();
     this.pollStats = false;
@@ -134,7 +158,7 @@ export class ProjectorViewPageComponent implements OnInit {
   /**
    * Redirect To Home Page
    */
-  redirectToHomePage() {
+  private redirectToHomePage() {
     this._router.navigate([RouteDefs.HOME]);
   }
   /**
@@ -142,7 +166,7 @@ export class ProjectorViewPageComponent implements OnInit {
    * {command: 'transition_next'}
    * to websocket
    */
-  nextSlide() {
+  private nextSlide() {
     const command = JSON.stringify({command: Request.TRANSITION_NEXT});
     this._wsService.send(command);
   }
@@ -152,7 +176,7 @@ export class ProjectorViewPageComponent implements OnInit {
    * {command: 'transition_previous'}
    * to websocket
    */
-  prevSlide() {
+  private prevSlide() {
     const command = JSON.stringify({command: Request.TRANSITION_PREVIOUS});
     this._wsService.send(command);
   }
@@ -162,14 +186,14 @@ export class ProjectorViewPageComponent implements OnInit {
   * {command: 'presentation_stop'}
   * to websocket
   */
-  stopSlide() {
+ private stopPresentation() {
     const command = JSON.stringify({command: Request.PRESENTATION_STOP});
     this._wsService.send(command);
   }
   /**
    * Open the warning modal
    */
-  openModal(title: string) {
+  private openModal(title: string) {
     if (!this._modalService.hasOpenModals() && !this.isControlPage) {
       const modalRef = this._modalService.open(ModalComponent, {centered: true});
       modalRef.componentInstance.title = title;
